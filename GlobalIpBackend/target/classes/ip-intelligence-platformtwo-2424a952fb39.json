@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "ip-intelligence-platformtwo",
+  "private_key_id": "2424a952fb39f49cd10200bfc5f118749cf18cf8",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDJFIkX0kZ0s4Pz\nY65CcqQONR3bxTu4gUezZLbQgDeM86k+gzJ+Xix2OsJhUp2Jj+23qxIVmIjB3X8B\nyuGdrUL/QprZMXRr9RPNpPV59V7dtW8hFO4HehxANPeJlDCR0520aNJEUvtUuDpo\n3Wr+QgEnUbsoDelpvV/HY0WvtLcRBR4qWR54N3A4oZEK/lY6k9ayKeZBcLDWsMw3\nNTEQc7jMB//XpGDy9kaSnB0JbUD2KxFJtXwrHPP5hgzDLIuw/RuuGYMS5PvsNLiK\n73nVF3Fpys0iCz1usASYcijG/W6dSqMZVF3RnKG2GXJireClZustSqYK2/7PKuHN\ntPRevn9lAgMBAAECggEAAS02IScKPA+crL1vRZbxWNcNo86HocT5p8ylwq1doDOQ\nCSAIq/F6oL3zA5zNv1UoWClGJRh4WtyGEd0hTN6eVhwwD3M0WnGo5l99zqQxs1c1\n/WRQ+bgyEXKGXf1MTldRM50upIBS7BQ1INGigol0MKgT0eJIuHCS1/nDe6uAfsnb\nlV4Pn1X7lN2gOe0eSXIkuyalHT3Uf3qtpG0esyd6zRG2rOHLY8O7E3WswRah9upm\nCuDGoDL4F8aZcuQjF0vwZcVxZ3yrMzyLrsCrCZ36KxJNZcDzP2r57TKoGqrAIV1Q\nIE48ATeXdF0Qx7g55UFhDHWWN+EhuEo3vQlWLla++QKBgQDz1j30LgQSzZ6GaZja\nJvjTRhN36XkdBOyiImgSsGTQb62aP185wkkY6amyz909DdsPNf8xmSOOyMd24bIU\n8/Ft+zIC4NNeGxJH6XbZRzctPij/u6qEjTrYFxhy/FGVhqhPgY6UzkWkMS04lhrS\ntiWtDChGwwplineQBp2uOqx7aQKBgQDTHEw31mgeP4LqkoTxjdNX7WwLo9JUIDl5\n1YqpRVME20c3yxBwxN0I+VkntxIlBIej2D5fhFV2FsmRcJ9v4Z0i3NxoeaU/mNEX\nOU26qexi7J2/vIQzPZGwNngWtLCO3PycUTFH/XQ1iTWPxfQZEdV0T01KrWrsnly7\nx5w1inZQnQKBgQDpIBJHnJ8kYxaHJ/qNx+jqBfujD8NNrWGYehDKnX8lkUCHUsN2\nc3xzpyMp5HZ/YvnnhxafkuxeHTQnQw2B3uEa56ke+1jahkNqIZoRjncAeIe2SPR0\nmpqB80La3MYbkYzlxtZNCxGmM6YqjcjDYIaQ9iijzuHnxwUc3FZxN4Ok0QKBgD5N\nUp0D9JRAsBUkCoHzFhUT51gED9Vt8ShogdR0tgxv3jO0BPUS1ByK4enbmEo+bP1I\nmxe7STFhhjka4KK3FZWtUoquo7sCEWrmKW9WKIIFTITCUM2CdRVo7cXdq2FuDErh\nl0akoQAPrzPv+prPbYw2vxuz1CNilQGB5jLS2xntAoGAKcbKNOEqZTpESZAYr65l\nTOIF2GOilb8Ey7nGe3Zs2rZ/W8ZinKcMVPyQMmBgI+xcOOEMvfRPSrWj38dYJZ68\n9HM6fcndJqBbhetr1d3H8hOWEnXJKYKo/VQnsNPv1La+0bQg8jzB1YGWyvOgdvIn\n+qLo7/+IMAq4sA2Bq1nBy4s=\n-----END PRIVATE KEY-----\n",
+  "client_email": "patent-api-service@ip-intelligence-platformtwo.iam.gserviceaccount.com",
+  "client_id": "100033012271724201968",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/patent-api-service%40ip-intelligence-platformtwo.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

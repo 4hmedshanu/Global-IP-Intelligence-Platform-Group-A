@@ -1,0 +1,5 @@
+.DS_Store
+.idea/
+google-credentials.json
+**/google-credentials.json
+src/main/resources/google-credentials.json

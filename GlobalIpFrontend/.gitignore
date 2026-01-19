@@ -1,0 +1,17 @@
+# Ignore Google credentials
+src/main/resources/google-credentials.json
+google-credentials.json
+**/google-credentials.json
+
+# Node modules
+node_modules/
+
+# Build output
+dist/
+build/
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
