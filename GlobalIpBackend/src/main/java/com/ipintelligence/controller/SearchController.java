@@ -37,11 +37,11 @@ public class SearchController {
     private final EndpointMetricsService endpointMetricsService;
 
     public SearchController(
-        IpSearchService ipSearchService,
-        EpoApiClient epoApiClient,
-        TmViewSeleniumService tmViewSeleniumService,
-        UserRepository userRepository,
-        EndpointMetricsService endpointMetricsService
+            IpSearchService ipSearchService,
+            EpoApiClient epoApiClient,
+            TmViewSeleniumService tmViewSeleniumService,
+            UserRepository userRepository,
+            EndpointMetricsService endpointMetricsService
     ) {
         this.ipSearchService = ipSearchService;
         this.epoApiClient = epoApiClient;
@@ -157,10 +157,10 @@ public class SearchController {
         long start = System.nanoTime();
         try {
             Pageable pageable = PageRequest.of(
-                searchRequest.getPage(),
-                searchRequest.getSize(),
-                Sort.Direction.fromString(searchRequest.getSortDirection()),
-                searchRequest.getSortBy()
+                    searchRequest.getPage(),
+                    searchRequest.getSize(),
+                    Sort.Direction.fromString(searchRequest.getSortDirection()),
+                    searchRequest.getSortBy()
             );
 
             Page<IpAsset> result = ipSearchService.searchLocalDatabase(searchRequest, pageable);

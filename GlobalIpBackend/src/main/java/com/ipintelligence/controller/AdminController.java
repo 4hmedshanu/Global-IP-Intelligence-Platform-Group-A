@@ -1,5 +1,5 @@
-
 package com.ipintelligence.controller;
+
 import jakarta.annotation.PostConstruct;
 
 import java.util.HashMap;
@@ -30,18 +30,16 @@ import com.ipintelligence.service.impl.AdminDashboardServiceImpl;
 import com.ipintelligence.service.impl.DatabaseMetricsService;
 import com.ipintelligence.service.impl.SystemLogService;
 
-
 @RestController
 @CrossOrigin(origins = "http://localhost:3000")
 @RequestMapping("/api/admin")
 @PreAuthorize("hasRole('ADMIN')")
 
-
-
 public class AdminController {
+
     // List of all monitored endpoints (shared for initialization)
     // Only endpoints actually used by the frontend
-    private static final String[][] ENDPOINTS = new String[][] {
+    private static final String[][] ENDPOINTS = new String[][]{
         {"/api/search/all", null},
         {"/api/search/patent/{externalId}", null},
         {"/api/tracker/subscribe", null},
@@ -66,7 +64,6 @@ public class AdminController {
         {"/api/register", null}
     };
 
-
     // Initialize metrics for all endpoints at startup
     @PostConstruct
     public void initEndpointMetrics() {
@@ -82,19 +79,16 @@ public class AdminController {
     @Autowired
     private HealthEndpoint healthEndpoint;
 
-	@Autowired
-     AdminDashboardServiceImpl adminService;
-	
-	
-	@Autowired
-	SystemLogService logService;
-	
-	@Autowired
-	 DatabaseMetricsService dbMetricsService;
+    @Autowired
+    AdminDashboardServiceImpl adminService;
 
-   
+    @Autowired
+    SystemLogService logService;
+
+    @Autowired
+    DatabaseMetricsService dbMetricsService;
+
     // ✅ ADMIN CHECK API
-
     @GetMapping
     public ResponseEntity<String> getAdminData() {
         long start = System.nanoTime();
@@ -122,7 +116,7 @@ public class AdminController {
             Map<String, Object> components = null;
             try {
                 var getComponents = health.getClass().getMethod("getComponents");
-                var composite = (java.util.Map<?,?>) getComponents.invoke(health);
+                var composite = (java.util.Map<?, ?>) getComponents.invoke(health);
                 if (composite != null) {
                     components = new java.util.HashMap<>();
                     for (var entry : composite.entrySet()) {
@@ -143,8 +137,10 @@ public class AdminController {
                         if (comp instanceof org.springframework.boot.actuate.health.Health) {
                             status = ((org.springframework.boot.actuate.health.Health) comp).getStatus().getCode();
                         } else if (comp instanceof Map) {
-                            Object s = ((Map<?,?>)comp).get("status");
-                            if (s != null) status = s.toString();
+                            Object s = ((Map<?, ?>) comp).get("status");
+                            if (s != null) {
+                                status = s.toString();
+                            }
                         }
                         actuatorStatus.put(indicator, status);
                     }
@@ -171,8 +167,7 @@ public class AdminController {
         }
         return result;
     }
-    
-    
+
     // ✅ ADD THIS
     @GetMapping("/db-metrics")
     public Map<String, Object> getDbMetrics() {
@@ -181,17 +176,16 @@ public class AdminController {
         endpointMetricsService.getTimer("/api/admin/db-metrics").record(System.nanoTime() - start, java.util.concurrent.TimeUnit.NANOSECONDS);
         return metrics;
     }
-    
-    
+
     @GetMapping("/dashboard/admin")
     public Map<String, Object> getAdminDashboard() {
         long start = System.nanoTime();
         Map<String, Object> response = new HashMap<>();
         try {
             response.put("systemStats", List.of(
-                Map.of(
-                    "systemUsage", adminService.getSystemUsageTrends()
-                )
+                    Map.of(
+                            "systemUsage", adminService.getSystemUsageTrends()
+                    )
             ));
             System.out.print(adminService.getSystemUsageTrends());
         } catch (Exception e) {
@@ -200,6 +194,5 @@ public class AdminController {
         endpointMetricsService.getTimer("/api/admin/dashboard/admin").record(System.nanoTime() - start, java.util.concurrent.TimeUnit.NANOSECONDS);
         return response;
     }
-    
-    
+
 }
