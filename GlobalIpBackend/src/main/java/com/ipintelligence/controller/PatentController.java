@@ -17,11 +17,15 @@ public class PatentController {
     @Autowired
     private GooglePatentService googlePatentService;
 
+    @Autowired
+    private com.ipintelligence.metrics.EndpointMetricsService endpointMetricsService;
+
     /**
      * Search patents using BigQuery
      */
     @PostMapping("/search")
     public ResponseEntity<SearchResultDto> searchPatents(@RequestBody SearchRequestDto searchRequest) {
+        long start = System.nanoTime();
         try {
             log.info("Patent search request received: {}", searchRequest.getQuery());
 
@@ -44,6 +48,8 @@ public class PatentController {
         } catch (Exception e) {
             log.error("Error searching patents", e);
             return ResponseEntity.internalServerError().build();
+        } finally {
+            endpointMetricsService.getTimer("/api/patents/search").record(System.nanoTime() - start, java.util.concurrent.TimeUnit.NANOSECONDS);
         }
     }
 
@@ -52,6 +58,7 @@ public class PatentController {
      */
     @GetMapping("/{publicationNumber}")
     public ResponseEntity<?> getPatentDetails(@PathVariable String publicationNumber) {
+        long start = System.nanoTime();
         try {
             log.info("Fetching patent details for: {}", publicationNumber);
 
@@ -66,6 +73,8 @@ public class PatentController {
         } catch (Exception e) {
             log.error("Error fetching patent details", e);
             return ResponseEntity.internalServerError().build();
+        } finally {
+            endpointMetricsService.getTimer("/api/patents/{publicationNumber}").record(System.nanoTime() - start, java.util.concurrent.TimeUnit.NANOSECONDS);
         }
     }
 
@@ -74,6 +83,7 @@ public class PatentController {
      */
     @GetMapping("/health")
     public ResponseEntity<String> checkHealth() {
+        long start = System.nanoTime();
         try {
             boolean available = googlePatentService.isAvailable();
             if (available) {
@@ -84,6 +94,8 @@ public class PatentController {
         } catch (Exception e) {
             log.error("Health check failed", e);
             return ResponseEntity.status(503).body("BigQuery Patent Service error: " + e.getMessage());
+        } finally {
+            endpointMetricsService.getTimer("/api/patents/health").record(System.nanoTime() - start, java.util.concurrent.TimeUnit.NANOSECONDS);
         }
     }
 }

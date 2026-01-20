@@ -10,4 +10,7 @@ public class ApiHealthDTO {
     private String status;
     private String uptime;
     private String avgResponse;
+
+    // No-args constructor for Jackson/JavaBean
+    public ApiHealthDTO() {}
 }

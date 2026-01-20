@@ -1,5 +1,8 @@
+
 package com.ipintelligence.controller;
 
+import com.ipintelligence.metrics.EndpointMetricsService;
+import org.springframework.beans.factory.annotation.Autowired;
 import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -8,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
-
 import com.ipintelligence.dto.FilingDto;
 import com.ipintelligence.dto.IpAssetDto;
 import com.ipintelligence.dto.Subscriptiondto;
@@ -16,9 +18,6 @@ import com.ipintelligence.model.Filing;
 import com.ipintelligence.model.IpAsset;
 import com.ipintelligence.model.Subscription;
 import com.ipintelligence.model.SubscriptionStatus;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,8 +25,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-
 import com.ipintelligence.model.User;
 import com.ipintelligence.repo.IpAssetRepository;
 import com.ipintelligence.repo.UserRepository;
@@ -40,6 +37,8 @@ import com.ipintelligence.service.impl.FilingTrackerService;
 @RestController
 @RequestMapping("/api/tracker")
 public class TrackerController {
+        @Autowired
+        private EndpointMetricsService endpointMetricsService;
 	
 	
 	@Autowired
@@ -69,6 +68,7 @@ public class TrackerController {
     
     @GetMapping("/my")
     public ResponseEntity<Map<String, Object>> getMyTrackedAssets(Principal principal) {
+        long start = System.nanoTime();
 
         User user = userRepo.findByEmail(principal.getName())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
@@ -86,18 +86,15 @@ public class TrackerController {
 
         for (Subscription s : subs) {
             IpAsset asset = s.getIpAsset();
-
             // 🔥 lifecycle calculate
             String lifecycle = filingtrackerservices.calculateLifecycle(asset);
             asset.setLegalStatus(lifecycle);
-
             switch (lifecycle) {
                 case "APPLICATION" -> application++;
                 case "GRANTED" -> granted++;
                 case "RENEWAL" -> renewal++;
                 case "EXPIRED" -> expired++;
             }
-
             Map<String, Object> assetMap = new HashMap<>();
             assetMap.put("id", asset.getId());
             assetMap.put("title", asset.getTitle());
@@ -109,13 +106,7 @@ public class TrackerController {
                     ? asset.getApplicationDate().toString()
                     : null
             );
-
             assets.add(assetMap);
-
-
-            
-            
-            
         }
 
         Map<String, Object> response = new HashMap<>();
@@ -127,6 +118,7 @@ public class TrackerController {
                 "expired", expired
         ));
 
+        endpointMetricsService.getTimer("/api/tracker/my").record(System.nanoTime() - start, java.util.concurrent.TimeUnit.NANOSECONDS);
         return ResponseEntity.ok(response);
     }
 
@@ -139,6 +131,7 @@ public class TrackerController {
             Principal principal
     ) {
 
+        long start = System.nanoTime();
         if (principal == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("status", "ERROR", "message", "User not authenticated"));
@@ -194,8 +187,9 @@ public class TrackerController {
 
         
 
+        endpointMetricsService.getTimer("/api/tracker/subscribe").record(System.nanoTime() - start, java.util.concurrent.TimeUnit.NANOSECONDS);
         return ResponseEntity.ok(
-                Map.of("status", "SUCCESS", "message", "Asset subscribed successfully")
+            Map.of("status", "SUCCESS", "message", "Asset subscribed successfully")
         );
     }
     
@@ -217,6 +211,8 @@ public class TrackerController {
 
         subscriptionService.unsubscribe(user, ipAsset);
 
+        long start = System.nanoTime();
+        endpointMetricsService.getTimer("/api/tracker/unsubscribe").record(System.nanoTime() - start, java.util.concurrent.TimeUnit.NANOSECONDS);
         return ResponseEntity.ok("Unsubscribed successfully");
     }
 
@@ -252,6 +248,8 @@ public class TrackerController {
                 .map(this::mapToDto)
                 .toList();
 
+        long start = System.nanoTime();
+        endpointMetricsService.getTimer("/api/tracker/subscriptionsbyid").record(System.nanoTime() - start, java.util.concurrent.TimeUnit.NANOSECONDS);
         return ResponseEntity.ok(response);
     }
     
@@ -385,10 +383,13 @@ public class TrackerController {
                         )
                 );
 
-        return filingRepository.findByIpAsset(asset)
-                .stream()
-                .map(this::mapToDto)
-                .toList();
+        long start = System.nanoTime();
+        List<FilingDto> result = filingRepository.findByIpAsset(asset)
+            .stream()
+            .map(this::mapToDto)
+            .toList();
+        endpointMetricsService.getTimer("/api/tracker/filings/{assetId}").record(System.nanoTime() - start, java.util.concurrent.TimeUnit.NANOSECONDS);
+        return result;
     }
     
     @GetMapping("/lifecycle/{assetId}")
@@ -459,6 +460,7 @@ public class TrackerController {
     
     @GetMapping("/analyst/lifecycle")
     public ResponseEntity<Map<String, Long>> getLifecycleStats(Principal principal) {
+        long start = System.nanoTime();
 
         User user = userRepo.findByEmail(principal.getName()).orElseThrow();
         List<Subscription> subs = subscriptionRepository.findByUser(user);
@@ -480,6 +482,7 @@ public class TrackerController {
         stats.put("EXPIRED", subs.stream()
             .filter(s -> "EXPIRED".equals(s.getIpAsset().getLegalStatus())).count());
 
+        endpointMetricsService.getTimer("/api/tracker/analyst/lifecycle").record(System.nanoTime() - start, java.util.concurrent.TimeUnit.NANOSECONDS);
         return ResponseEntity.ok(stats);
     }
 
@@ -491,6 +494,7 @@ public class TrackerController {
     // Analyst Dashboard Widgets ke liye stats [cite: 5, 12]
     @GetMapping("/analyst/stats")
     public ResponseEntity<Map<String, Long>> getAnalystStats(Principal principal) {
+        long start = System.nanoTime();
         User user = userRepo.findByEmail(principal.getName()).get();
         List<Subscription> subs = subscriptionRepository.findByUser(user);
 
@@ -500,6 +504,7 @@ public class TrackerController {
         Map<String, Long> stats = new HashMap<>();
         stats.put("granted", granted);
         stats.put("pending", pending);
+        endpointMetricsService.getTimer("/api/tracker/analyst/stats").record(System.nanoTime() - start, java.util.concurrent.TimeUnit.NANOSECONDS);
         return ResponseEntity.ok(stats);
     }
     
