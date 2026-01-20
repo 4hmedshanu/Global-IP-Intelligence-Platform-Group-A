@@ -9,7 +9,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 public class EndpointMetricsService {
-
     private final MeterRegistry meterRegistry;
     private final Map<String, Timer> timers = new ConcurrentHashMap<>();
 
@@ -25,9 +24,7 @@ public class EndpointMetricsService {
 
     public double getAvgResponse(String endpoint) {
         Timer timer = timers.get(endpoint);
-        if (timer == null || timer.count() == 0) {
-            return -1;
-        }
+        if (timer == null || timer.count() == 0) return -1;
         return timer.mean(java.util.concurrent.TimeUnit.MILLISECONDS);
     }
 
