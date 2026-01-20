@@ -26,3 +26,4 @@ GlobalIpFrontend/build/
 # Misc
 .env
 *.swp
+GlobalIpBackend/target/
