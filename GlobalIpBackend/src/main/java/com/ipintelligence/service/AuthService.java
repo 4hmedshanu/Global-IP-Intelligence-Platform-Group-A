@@ -9,4 +9,6 @@ public interface AuthService {
     ProfileResponse updateProfile(String email, ProfileRequest request);
     void changePassword(String email, String newPassword);
 
+    void forgotPassword(String email);
+    boolean resetPassword(String token, String newPassword);
 }

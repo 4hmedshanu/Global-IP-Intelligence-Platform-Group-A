@@ -251,33 +251,9 @@ export default function UserDashboard() {
     }
   };
 
-  const handleSearch = async (e) => {
+  const handleSearch = (e) => {
     e.preventDefault();
-    setSearchLoading(true);
-    try {
-      const searchRequest = {
-        query: searchQuery,
-        assetType: searchType === 'patents' ? 'PATENT' : 'TRADEMARK',
-        jurisdiction: searchFilters.jurisdiction || null,
-        fromDate: searchFilters.dateFrom || null,
-        toDate: searchFilters.dateTo || null,
-        page: 0,
-        size: 5,
-        sortBy: 'publicationDate',
-        sortDirection: 'DESC'
-      };
-
-      const response = await api.post('/api/search/all', searchRequest);
-      setSearchResults(response.data.assets || []);
-
-      // Refresh search history
-      fetchSearchHistory();
-    } catch (error) {
-      console.error('Error searching:', error);
-      setSearchResults([]);
-    } finally {
-      setSearchLoading(false);
-    }
+    navigate('/search');
   };
 
   const handleAdvancedSearch = () => {

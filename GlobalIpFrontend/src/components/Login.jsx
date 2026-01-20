@@ -229,7 +229,11 @@ export default function Login() {
                   <input type="checkbox" className="w-4 h-4 text-primary-600 border-gray-300 dark:border-gray-600 rounded focus:ring-primary-500 dark:focus:ring-primary-400" />
                   <span className="ml-2 text-gray-600 dark:text-gray-400">Remember me</span>
                 </label>
-                <button type="button" className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-semibold">
+                <button 
+                  type="button" 
+                  className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-semibold"
+                  onClick={() => navigate("/forgot-password")}
+                >
                   Forgot password?
                 </button>
               </div>

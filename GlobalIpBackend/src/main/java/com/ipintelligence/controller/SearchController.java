@@ -34,13 +34,13 @@ public class SearchController {
     private final TmViewSeleniumService tmViewSeleniumService;
     private final UserRepository userRepository;
 
-    public SearchController(IpSearchService ipSearchService, EpoApiClient epoApiClient, TmViewSeleniumService tmViewSeleniumService, UserRepository userRepository) {
+    public SearchController(IpSearchService ipSearchService, EpoApiClient epoApiClient,
+                            TmViewSeleniumService tmViewSeleniumService, UserRepository userRepository) {
         this.ipSearchService = ipSearchService;
         this.epoApiClient = epoApiClient;
         this.tmViewSeleniumService = tmViewSeleniumService;
         this.userRepository = userRepository;
     }
-    
 
     // Direct endpoint for Selenium-based TMView search (for testing/fallback)
     @PostMapping("/trademark/selenium")
@@ -53,7 +53,6 @@ public class SearchController {
         result.setDataSource("TMVIEW-SELENIUM");
         return ResponseEntity.ok(result);
     }
-    
 
     @PostMapping("/all")
     public ResponseEntity<SearchResultDto> searchAllSources(
@@ -75,47 +74,44 @@ public class SearchController {
         if (principal != null && principal.getUsername() != null) {
             realUser = userRepository.findByEmail(principal.getUsername()).orElse(null);
         }
+
         SearchResultDto result = ipSearchService.searchAcrossAllSources(searchRequest, realUser);
-        // Save search history for dashboard counts
+        // ✅ Save search history ONCE - only in controller
         ipSearchService.saveSearchHistory(searchRequest, result, realUser);
         return ResponseEntity.ok(result);
     }
-    
-    
+
     @PostMapping("/filters/{jurisdiction}")
     public ResponseEntity<SearchResultDto> searchByJurisdiction(
             @PathVariable String jurisdiction,
             @AuthenticationPrincipal org.springframework.security.core.userdetails.User principal) {
 
         SearchRequestDto searchRequest = new SearchRequestDto();
-
-        // ✅ String expected, String passed
         searchRequest.setPatentOffice(jurisdiction);
 
         log.info("[SEARCH] Jurisdiction filter: {}", jurisdiction);
 
         User realUser = null;
         if (principal != null && principal.getUsername() != null) {
-            realUser = userRepository
-                    .findByEmail(principal.getUsername())
-                    .orElse(null);
+            realUser = userRepository.findByEmail(principal.getUsername()).orElse(null);
         }
 
-        SearchResultDto result =
-                ipSearchService.searchAcrossAllSources(searchRequest, realUser);
-
+        SearchResultDto result = ipSearchService.searchAcrossAllSources(searchRequest, realUser);
+        // Note: Not saving search history for filter-only searches
         return ResponseEntity.ok(result);
     }
-
-
-    
-    
 
     @PostMapping("/source/{dataSource}")
     public ResponseEntity<SearchResultDto> searchSpecificSource(
             @PathVariable String dataSource,
             @RequestBody SearchRequestDto searchRequest,
-            @AuthenticationPrincipal User currentUser) {
+            @AuthenticationPrincipal org.springframework.security.core.userdetails.User principal) {
+
+        // ✅ Fetch the real User entity from DB
+        User currentUser = null;
+        if (principal != null && principal.getUsername() != null) {
+            currentUser = userRepository.findByEmail(principal.getUsername()).orElse(null);
+        }
 
         log.info("User: {}, Searching {} for query: {}",
                 currentUser != null ? currentUser.getEmail() : "anonymous",
@@ -123,7 +119,7 @@ public class SearchController {
                 searchRequest.getQuery());
 
         SearchResultDto result = ipSearchService.searchSpecificSource(searchRequest, dataSource, currentUser);
-        // Save search history for dashboard counts
+        // ✅ Save search history ONCE - only in controller
         ipSearchService.saveSearchHistory(searchRequest, result, currentUser);
         return ResponseEntity.ok(result);
     }
@@ -162,7 +158,6 @@ public class SearchController {
         return ResponseEntity.notFound().build();
     }
 
-    // ✅ NEW ENDPOINT: Fetch full patent details from EPO directly
     @GetMapping("/patent/{externalId}")
     public ResponseEntity<IpAssetDto> getPatentDetailsFromSource(
             @PathVariable String externalId,
@@ -188,9 +183,15 @@ public class SearchController {
 
     @GetMapping("/history")
     public ResponseEntity<List<SearchHistory>> getUserSearchHistory(
-            @AuthenticationPrincipal User currentUser,
+            @AuthenticationPrincipal org.springframework.security.core.userdetails.User principal,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
+
+        // ✅ Fetch the real User entity from DB
+        User currentUser = null;
+        if (principal != null && principal.getUsername() != null) {
+            currentUser = userRepository.findByEmail(principal.getUsername()).orElse(null);
+        }
 
         if (currentUser == null) {
             return ResponseEntity.badRequest().build();
@@ -200,26 +201,16 @@ public class SearchController {
         List<SearchHistory> history = ipSearchService.getUserSearchHistory(currentUser, pageable);
         return ResponseEntity.ok(history);
     }
-    
-    
-    // Fills the "Jurisdiction" dropdown in your UI
+
     @GetMapping("/filters/jurisdictions")
     public List<String> getJurisdictions() {
         return List.of("US", "EP", "WO", "JP", "CN", "KR", "DE", "GB", "FR");
     }
 
-    // Fills the data sources list
     @GetMapping("/filters/data-sources")
     public List<String> getDataSources() {
         return List.of("Google Patents Public Data", "Internal BigQuery DB");
     }
-    
-
-//    @GetMapping("/filters/jurisdictions")
-//    public ResponseEntity<List<String>> getAvailableJurisdictions() {
-//        List<String> jurisdictions = ipSearchService.getAvailableJurisdictions();
-//        return ResponseEntity.ok(jurisdictions);
-//    }
 
     @GetMapping("/filters/patent-offices")
     public ResponseEntity<List<String>> getAvailablePatentOffices() {
@@ -227,19 +218,21 @@ public class SearchController {
         return ResponseEntity.ok(patentOffices);
     }
 
-//    @GetMapping("/filters/data-sources")
-//    public ResponseEntity<List<String>> getAvailableDataSources() {
-//        List<String> dataSources = ipSearchService.getAvailableDataSources();
-//        return ResponseEntity.ok(dataSources);
-//    }
-
     @GetMapping("/filters/asset-types")
     public ResponseEntity<IpAsset.AssetType[]> getAvailableAssetTypes() {
         return ResponseEntity.ok(IpAsset.AssetType.values());
     }
 
     @GetMapping("/stats")
-    public ResponseEntity<Map<String, Object>> getSearchStats(@AuthenticationPrincipal User currentUser) {
+    public ResponseEntity<Map<String, Object>> getSearchStats(
+            @AuthenticationPrincipal org.springframework.security.core.userdetails.User principal) {
+
+        // ✅ Fetch the real User entity from DB if needed
+        User currentUser = null;
+        if (principal != null && principal.getUsername() != null) {
+            currentUser = userRepository.findByEmail(principal.getUsername()).orElse(null);
+        }
+
         return ResponseEntity.ok(Map.of(
                 "message", "Search statistics endpoint - to be implemented",
                 "totalSearches", 0,

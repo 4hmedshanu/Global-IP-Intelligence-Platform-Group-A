@@ -2,23 +2,13 @@
 package com.ipintelligence.model;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
 @Table(name = "users")
-@Getter
-@Setter
-@NoArgsConstructor
 public class User {
-
-    public Integer getId() {
-        return this.id;
-    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -41,13 +31,13 @@ public class User {
 
     @Column(nullable = false)
     private String role;
-    
-//    @Column(nullable = true)
-//    private boolean verified = false;
+
+    //    @Column(nullable = true)
+    //    private boolean verified = false;
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
-    
+
     // A user can have many subscriptions
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Subscription> subscriptions;
@@ -65,4 +55,35 @@ public class User {
             role = "USER";
         }
     }
+
+    // Explicit getters and setters for all fields
+    public Integer getId() { return id; }
+    public void setId(Integer id) { this.id = id; }
+
+    public String getUsername() { return username; }
+    public void setUsername(String username) { this.username = username; }
+
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = password; }
+
+    public String getFirstName() { return firstName; }
+    public void setFirstName(String firstName) { this.firstName = firstName; }
+
+    public String getLastName() { return lastName; }
+    public void setLastName(String lastName) { this.lastName = lastName; }
+
+    public String getRole() { return role; }
+    public void setRole(String role) { this.role = role; }
+
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+    public List<Subscription> getSubscriptions() { return subscriptions; }
+    public void setSubscriptions(List<Subscription> subscriptions) { this.subscriptions = subscriptions; }
+
+    public List<Notification> getNotifications() { return notifications; }
+    public void setNotifications(List<Notification> notifications) { this.notifications = notifications; }
 }

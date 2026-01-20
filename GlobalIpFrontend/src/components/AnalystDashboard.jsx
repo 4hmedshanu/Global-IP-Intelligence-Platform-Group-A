@@ -1,4 +1,3 @@
-
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import html2canvas from 'html2canvas';
@@ -634,45 +633,7 @@ export default function AnalystDashboard() {
 
 
 
-                {/* Advanced Filters for Analytics */}
-                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 mb-8">
-                  <form className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                      <select
-                        className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                        value={filters.jurisdiction}
-                        onChange={e => setFilters(f => ({ ...f, jurisdiction: e.target.value }))}
-                      >
-                        <option value="">All Jurisdictions</option>
-                        <option value="US">United States</option>
-                        <option value="EP">Europe</option>
-                        <option value="CN">China</option>
-                      </select>
-                      <select
-                        className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                        value={filters.technology}
-                        onChange={e => setFilters(f => ({ ...f, technology: e.target.value }))}
-                      >
-                        <option value="">All Technologies</option>
-                        <option value="AI">AI/ML</option>
-                        <option value="Blockchain">Blockchain</option>
-                        <option value="IoT">IoT</option>
-                      </select>
-                      <input
-                        type="date"
-                        className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                        value={filters.fromDate}
-                        onChange={e => setFilters(f => ({ ...f, fromDate: e.target.value }))}
-                      />
-                      <input
-                        type="date"
-                        className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                        value={filters.toDate}
-                        onChange={e => setFilters(f => ({ ...f, toDate: e.target.value }))}
-                      />
-                    </div>
-                  </form>
-                </div>
+               
                 {/* Graphs and dynamic badges side by side */}
                 <div className="flex flex-col lg:flex-row gap-8 mb-8 w-full">
                   <div className={`grid gap-10 flex-1 ${safeTechPieData.length > 0 ? 'lg:grid-cols-3' : 'lg:grid-cols-2'}`}>
@@ -1307,65 +1268,69 @@ export default function AnalystDashboard() {
               ...
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
 
-              {/* ===== Citation Impact ===== */}
-              <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border">
-                <div className="flex items-center justify-between mb-4">
-                  <h4 className="text-lg font-bold">📚 Citation Impact</h4>
-                  <span className="text-xs px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full">
-                    Forward Citations
-                  </span>
+            {activeTab !== 'trends' && (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
+
+                {/* ===== Citation Impact ===== */}
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border">
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="text-lg font-bold">📚 Citation Impact</h4>
+                    <span className="text-xs px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full">
+                      Forward Citations
+                    </span>
+                  </div>
+
+                  <p className="text-sm text-gray-500 mb-4">
+                    Indicates technological influence based on how often patents are cited by later filings.
+                  </p>
+
+                  <ResponsiveContainer width="100%" height={280}>
+                    <BarChart data={safeCitationData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="application" hide />
+                      <YAxis />
+                      <Tooltip />
+                      <Bar dataKey="citations" radius={[6, 6, 0, 0]} fill="#6366f1" />
+                    </BarChart>
+                  </ResponsiveContainer>
+
+                  <p className="mt-3 text-xs text-gray-400">
+                    🔍 Higher citations = higher IP impact
+                  </p>
                 </div>
 
-                <p className="text-sm text-gray-500 mb-4">
-                  Indicates technological influence based on how often patents are cited by later filings.
-                </p>
+                {/* ===== Patent Family Strength ===== */}
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border">
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="text-lg font-bold">🌍 Patent Family Strength</h4>
+                    <span className="text-xs px-3 py-1 bg-green-100 text-green-700 rounded-full">
+                      Global Coverage
+                    </span>
+                  </div>
 
-                <ResponsiveContainer width="100%" height={280}>
-                  <BarChart data={safeCitationData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="application" hide />
-                    <YAxis />
-                    <Tooltip />
-                    <Bar dataKey="citations" radius={[6, 6, 0, 0]} fill="#6366f1" />
-                  </BarChart>
-                </ResponsiveContainer>
+                  <p className="text-sm text-gray-500 mb-4">
+                    Shows how widely a patent is protected across different countries.
+                  </p>
 
-                <p className="mt-3 text-xs text-gray-400">
-                  🔍 Higher citations = higher IP impact
-                </p>
-              </div>
+                  <ResponsiveContainer width="100%" height={280}>
+                    <BarChart data={safeFamilyData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="family" hide />
+                      <YAxis />
+                      <Tooltip />
+                      <Bar dataKey="size" radius={[6, 6, 0, 0]} fill="#22c55e" />
+                    </BarChart>
+                  </ResponsiveContainer>
 
-              {/* ===== Patent Family Strength ===== */}
-              <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border">
-                <div className="flex items-center justify-between mb-4">
-                  <h4 className="text-lg font-bold">🌍 Patent Family Strength</h4>
-                  <span className="text-xs px-3 py-1 bg-green-100 text-green-700 rounded-full">
-                    Global Coverage
-                  </span>
+                  <p className="mt-3 text-xs text-gray-400">
+                    🌐 Larger family = stronger global protection
+                  </p>
                 </div>
 
-                <p className="text-sm text-gray-500 mb-4">
-                  Shows how widely a patent is protected across different countries.
-                </p>
-
-                <ResponsiveContainer width="100%" height={280}>
-                  <BarChart data={safeFamilyData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="family" hide />
-                    <YAxis />
-                    <Tooltip />
-                    <Bar dataKey="size" radius={[6, 6, 0, 0]} fill="#22c55e" />
-                  </BarChart>
-                </ResponsiveContainer>
-
-                <p className="mt-3 text-xs text-gray-400">
-                  🌐 Larger family = stronger global protection
-                </p>
               </div>
 
-            </div>
+            )}
 
 
             {/* ===== Technology Distribution ===== */}
@@ -1438,24 +1403,9 @@ export default function AnalystDashboard() {
               </div>
             )}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
           </main>
         </div>
       </div>
     </>
   );
 }
-
-

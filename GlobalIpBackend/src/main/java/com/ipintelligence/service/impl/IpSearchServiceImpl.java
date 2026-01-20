@@ -12,7 +12,6 @@ import com.ipintelligence.repo.SearchHistoryRepository;
 import com.ipintelligence.service.IpSearchService;
 import com.ipintelligence.service.api.PatentOfficeApiClient;
 import com.ipintelligence.service.GooglePatentService;
-import com.ipintelligence.dto.IpAssetDto;
 import com.ipintelligence.service.impl.TmViewSeleniumService;
 import org.springframework.beans.factory.annotation.Autowired;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +30,18 @@ import java.util.stream.Collectors;
 @Slf4j
 public class IpSearchServiceImpl implements IpSearchService {
 
+    @Override
+    public boolean isAvailable() {
+        // Optionally, check DB or a simple query
+        try {
+            ipAssetRepository.count(); // simple DB check
+            return true;
+        } catch (Exception e) {
+            log.error("IpSearchService health check failed", e);
+            return false;
+        }
+    }
+
     private final List<PatentOfficeApiClient> apiClients;
     private final IpAssetRepository ipAssetRepository;
     private final SearchHistoryRepository searchHistoryRepository;
@@ -40,11 +51,11 @@ public class IpSearchServiceImpl implements IpSearchService {
 
     @Autowired
     public IpSearchServiceImpl(List<PatentOfficeApiClient> apiClients,
-            IpAssetRepository ipAssetRepository,
-            SearchHistoryRepository searchHistoryRepository,
-            ObjectMapper objectMapper,
-            GooglePatentService googlePatentService,
-            TmViewSeleniumService tmViewSeleniumService) {
+                               IpAssetRepository ipAssetRepository,
+                               SearchHistoryRepository searchHistoryRepository,
+                               ObjectMapper objectMapper,
+                               GooglePatentService googlePatentService,
+                               TmViewSeleniumService tmViewSeleniumService) {
         this.apiClients = apiClients;
         this.ipAssetRepository = ipAssetRepository;
         this.searchHistoryRepository = searchHistoryRepository;
@@ -64,7 +75,6 @@ public class IpSearchServiceImpl implements IpSearchService {
 
         try {
             List<CompletableFuture<SearchResultDto>> futures = new ArrayList<>();
-            // Use searchRequest fields as provided. Do not mutate query/inventor/assignee based on searchType.
 
             // Determine if this is a trademark or patent search
             boolean isTrademark = false;
@@ -83,7 +93,7 @@ public class IpSearchServiceImpl implements IpSearchService {
                     try {
                         List<IpAssetDto> dtos = tmViewSeleniumService.searchTrademark(
                                 searchRequest.getQuery() != null ? searchRequest.getQuery()
-                                : (searchRequest.getAssignee() != null ? searchRequest.getAssignee() : "")
+                                        : (searchRequest.getAssignee() != null ? searchRequest.getAssignee() : "")
                         );
                         SearchResultDto result = new SearchResultDto();
                         result.setAssets(dtos);
@@ -96,18 +106,18 @@ public class IpSearchServiceImpl implements IpSearchService {
                     }
                 }));
             } else {
-                // For keyword, inventor, or assignee, call all patent sources (not just GooglePatentService)
+                // For patents, call all patent sources
                 apiClients.stream()
                         .filter(client -> !client.getDataSource().equalsIgnoreCase("TMVIEW") && client.isAvailable())
                         .forEach(client
-                                -> futures.add(CompletableFuture.supplyAsync(() -> {
-                            try {
-                                return client.search(searchRequest);
-                            } catch (Exception e) {
-                                log.error("Error searching with client: {}", client.getDataSource(), e);
-                                return createEmptyResult(searchRequest, client.getDataSource());
-                            }
-                        }))
+                                        -> futures.add(CompletableFuture.supplyAsync(() -> {
+                                    try {
+                                        return client.search(searchRequest);
+                                    } catch (Exception e) {
+                                        log.error("Error searching with client: {}", client.getDataSource(), e);
+                                        return createEmptyResult(searchRequest, client.getDataSource());
+                                    }
+                                }))
                         );
                 // Always include GooglePatentService as well
                 futures.add(CompletableFuture.supplyAsync(() -> {
@@ -153,12 +163,7 @@ public class IpSearchServiceImpl implements IpSearchService {
             combinedResult.setAssets(filteredAssets);
             combinedResult.setTotalElements(filteredAssets.size());
 
-            // Save search history with user validation
-            if (user != null) {
-                saveSearchHistory(searchRequest, combinedResult, user);
-            } else {
-                log.warn("Cannot save search history: user is null");
-            }
+            // ✅ REMOVED: Don't save history here - controller will handle it
 
             // Save new assets to database
             if (combinedResult.getAssets() != null && !combinedResult.getAssets().isEmpty()) {
@@ -200,12 +205,7 @@ public class IpSearchServiceImpl implements IpSearchService {
                 result = client.search(searchRequest);
             }
 
-            // Save search history with user validation
-            if (user != null) {
-                saveSearchHistory(searchRequest, result, user);
-            } else {
-                log.warn("Cannot save search history: user is null");
-            }
+            // ✅ REMOVED: Don't save history here - controller will handle it
 
             // Save new assets to database
             if (!result.getAssets().isEmpty()) {
@@ -312,7 +312,8 @@ public class IpSearchServiceImpl implements IpSearchService {
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void saveSearchHistory(SearchRequestDto searchRequest, SearchResultDto result, User user) {
-        System.out.println("[SEARCH-DEBUG] Saving search history for user: " + (user != null ? (user.getId() + ", " + user.getEmail() + ", username=" + user.getUsername()) : "null"));
+        log.info("[SEARCH-DEBUG] Saving search history for user: {}",
+                user != null ? (user.getId() + ", " + user.getEmail() + ", username=" + user.getUsername()) : "null");
         try {
             // Validate user is not null
             if (user == null) {
@@ -327,7 +328,8 @@ public class IpSearchServiceImpl implements IpSearchService {
             }
 
             SearchHistory history = new SearchHistory();
-            history.setUser(user);  // CRITICAL: Set user before saving
+            history.setUser(user);
+
             // Always set search_query to the first non-null of query, inventor, or assignee
             String searchQuery = searchRequest.getQuery();
             if (searchQuery == null || searchQuery.trim().isEmpty()) {
@@ -350,10 +352,10 @@ public class IpSearchServiceImpl implements IpSearchService {
             }
 
             history.setResultsCount((int) result.getTotalElements());
+
             // Normalize dataSource for dashboard counting
             String ds = result.getDataSource();
             if (ds != null && ds.contains(",")) {
-                // Take the first data source as the main one
                 ds = ds.split(",")[0].trim();
             }
             if (ds != null && ds.toUpperCase().startsWith("TMVIEW")) {
@@ -366,13 +368,13 @@ public class IpSearchServiceImpl implements IpSearchService {
             history.setSearchType(determineSearchType(searchRequest));
 
             searchHistoryRepository.save(history);
-            log.info("[SEARCH-DEBUG] Search history saved successfully for user: id={}, email={}, username={}", user.getId(), user.getEmail(), user.getUsername());
+            log.info("[SEARCH-DEBUG] Search history saved successfully for user: id={}, email={}, username={}",
+                    user.getId(), user.getEmail(), user.getUsername());
 
         } catch (Exception e) {
             log.error("Error saving search history for user {}: {}",
                     user != null ? user.getEmail() : "null",
                     e.getMessage(), e);
-            // Don't propagate - search history failure shouldn't break the search
         }
     }
 
@@ -389,7 +391,7 @@ public class IpSearchServiceImpl implements IpSearchService {
     @Override
     public List<String> getAvailableDataSources() {
         List<String> dataSources = new ArrayList<>();
-        dataSources.add("GOOGLE_PATENT");  // Add Google Patents first
+        dataSources.add("GOOGLE_PATENT");
         dataSources.addAll(apiClients.stream()
                 .map(PatentOfficeApiClient::getDataSource)
                 .collect(Collectors.toList()));
@@ -399,7 +401,6 @@ public class IpSearchServiceImpl implements IpSearchService {
     private SearchResultDto combineSearchResults(List<CompletableFuture<SearchResultDto>> futures, SearchRequestDto searchRequest) {
         SearchResultDto combinedResult = new SearchResultDto();
         List<IpAssetDto> allAssets = new ArrayList<>();
-        long totalElements = 0;
         StringBuilder dataSources = new StringBuilder();
 
         for (CompletableFuture<SearchResultDto> future : futures) {
@@ -429,6 +430,7 @@ public class IpSearchServiceImpl implements IpSearchService {
         int uniqueCount = uniqueAssets.size();
         List<IpAssetDto> finalAssets = new ArrayList<>(uniqueAssets.values());
         log.info("[AGG-DEBUG] Returning {} unique assets. Sample: {}", uniqueCount, finalAssets.stream().limit(3).toList());
+
         combinedResult.setAssets(finalAssets);
         combinedResult.setTotalElements(uniqueCount);
         combinedResult.setCurrentPage(searchRequest.getPage());
@@ -518,6 +520,5 @@ public class IpSearchServiceImpl implements IpSearchService {
         asset.setAssignee(dto.getAssignee());
         asset.setKeywords(dto.getKeywords());
         asset.setLegalStatus(dto.getLegalStatus());
-        // Update other fields as needed
     }
 }

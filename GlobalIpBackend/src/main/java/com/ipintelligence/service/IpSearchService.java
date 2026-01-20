@@ -34,4 +34,11 @@ public interface IpSearchService {
     List<String> getAvailablePatentOffices();
 
     List<String> getAvailableDataSources();
+
+    /**
+     * Lightweight health check for actuator health indicator.
+     */
+    default boolean isAvailable() {
+        return true;
+    }
 }

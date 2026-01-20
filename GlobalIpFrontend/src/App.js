@@ -5,6 +5,8 @@ import LandingPage from "./components/LandingPage";
 import Login from "./components/Login";
 import Register from "./components/Register";
 import OAuth2RedirectHandler from "./components/OAuth2RedirectHandler";
+import ForgotPassword from "./components/ForgotPassword";
+import ResetPassword from "./components/ResetPassword";
 import AdminDashboard from "./components/AdminDashboard";
 import UserDashboard from "./components/UserDashboard";
 import AnalystDashboard from "./components/AnalystDashboard";
@@ -26,6 +28,8 @@ function App() {
             <Route path="/register" element={<Register />} />
             <Route path="/oauth2/redirect" element={<OAuth2RedirectHandler />} />
             <Route path="/oauth2/success" element={<OAuth2RedirectHandler />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             
             {/* Protected Routes - Only accessible with authentication and correct role */}
             <Route 
