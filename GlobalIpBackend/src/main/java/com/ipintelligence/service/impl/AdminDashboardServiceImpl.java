@@ -84,16 +84,7 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
     
     
     
-//    public void deleteUser(Integer id) {
-//        User user = userRepository.findById(id).orElse(null);
-//        if(user==null) {
-//        	
-//        }
-//        else {
-//        	userRepository.delete(user);
-//        }
-//        
-//    }
+
     @Transactional
     public void deleteUser(Integer id) {
         searchHistoryRepository.deleteByUserId(id); // 👈 delete children first

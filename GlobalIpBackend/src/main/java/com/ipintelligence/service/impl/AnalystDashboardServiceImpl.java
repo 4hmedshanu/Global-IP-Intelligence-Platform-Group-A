@@ -5,8 +5,10 @@ import org.springframework.stereotype.Service;
 import com.ipintelligence.dto.AnalystDashboardResponse;
 import com.ipintelligence.model.User;
 import com.ipintelligence.model.IpAsset;
+import com.ipintelligence.model.SubscriptionStatus;
 import com.ipintelligence.repo.IpAssetRepository;
 import com.ipintelligence.repo.SearchHistoryRepository;
+import com.ipintelligence.repo.subscriptionRepository;
 import com.ipintelligence.service.AnalystDashboardService;
 
 import java.time.LocalDate;
@@ -19,55 +21,73 @@ public class AnalystDashboardServiceImpl implements AnalystDashboardService {
 
     private final IpAssetRepository ipAssetRepository;
     private final SearchHistoryRepository searchHistoryRepository;
+    private final subscriptionRepository subscriptionRepository;
 
-    public AnalystDashboardServiceImpl(IpAssetRepository ipAssetRepository, SearchHistoryRepository searchHistoryRepository) {
+    // ✅ Constructor Injection (BEST PRACTICE)
+    public AnalystDashboardServiceImpl(
+            IpAssetRepository ipAssetRepository,
+            SearchHistoryRepository searchHistoryRepository,
+            subscriptionRepository subscriptionRepository
+    ) {
         this.ipAssetRepository = ipAssetRepository;
         this.searchHistoryRepository = searchHistoryRepository;
+        this.subscriptionRepository = subscriptionRepository;
     }
 
     @Override
-    public AnalystDashboardResponse getDashboardForAnalyst(User user, String jurisdiction, String technology, String fromDate, String toDate) {
-        // 1. Analytics Data: filings per month (last 6 months)
+    public AnalystDashboardResponse getDashboardForAnalyst(
+            User user,
+            String jurisdiction,
+            String technology,
+            String fromDate,
+            String toDate
+    ) {
+
+        /* =========================================================
+           1️⃣ ANALYTICS DATA (Last 6 Months Filings)
+        ========================================================= */
         List<Map<String, Object>> analyticsData = new ArrayList<>();
         YearMonth now = YearMonth.now();
+
         for (int i = 5; i >= 0; i--) {
             YearMonth ym = now.minusMonths(i);
             LocalDate start = ym.atDay(1);
             LocalDate end = ym.atEndOfMonth();
+
             long patents = ipAssetRepository.searchWithFilters(
-                    null, // title
-                    null, // inventor
-                    null, // assignee
+                    null, null, null,
                     jurisdiction != null && !jurisdiction.isEmpty() ? jurisdiction : null,
                     IpAsset.AssetType.PATENT,
-                    null, // patentOffice
-                    start,
-                    end,
+                    null,
+                    start, end,
                     org.springframework.data.domain.Pageable.unpaged()
             ).getTotalElements();
+
             long trademarks = ipAssetRepository.searchWithFilters(
-                    null, // title
-                    null, // inventor
-                    null, // assignee
+                    null, null, null,
                     jurisdiction != null && !jurisdiction.isEmpty() ? jurisdiction : null,
                     IpAsset.AssetType.TRADEMARK,
-                    null, // patentOffice
-                    start,
-                    end,
+                    null,
+                    start, end,
                     org.springframework.data.domain.Pageable.unpaged()
             ).getTotalElements();
-            long filings = patents + trademarks;
+
             Map<String, Object> entry = new HashMap<>();
-            entry.put("date", ym.getMonth().toString().substring(0, 1) + ym.getMonth().toString().substring(1, 3).toLowerCase());
+            entry.put("date", ym.getMonth().toString().substring(0, 1)
+                    + ym.getMonth().toString().substring(1, 3).toLowerCase());
             entry.put("patents", patents);
             entry.put("trademarks", trademarks);
-            entry.put("filings", filings);
+            entry.put("filings", patents + trademarks);
+
             analyticsData.add(entry);
         }
 
-        // 2. Trend Data: group by technology (keywords)
+        /* =========================================================
+           2️⃣ DATE FILTER
+        ========================================================= */
         LocalDate from = null;
         LocalDate to = null;
+
         try {
             if (fromDate != null && !fromDate.isEmpty()) {
                 from = LocalDate.parse(fromDate);
@@ -75,95 +95,132 @@ public class AnalystDashboardServiceImpl implements AnalystDashboardService {
             if (toDate != null && !toDate.isEmpty()) {
                 to = LocalDate.parse(toDate);
             }
-        } catch (Exception ignored) {
-        }
+        } catch (Exception ignored) {}
 
         List<IpAsset> assets = ipAssetRepository.searchWithFilters(
-                null, // title
-                null, // inventor
-                null, // assignee
+                null, null, null,
                 jurisdiction != null && !jurisdiction.isEmpty() ? jurisdiction : null,
-                null, // assetType
-                null, // patentOffice
-                from,
-                to,
+                null,
+                null,
+                from, to,
                 org.springframework.data.domain.Pageable.unpaged()
         ).getContent();
 
-        Map<String, Long> techMap = assets.stream()
-                .filter(a -> a.getKeywords() != null && !a.getKeywords().isEmpty())
-                .collect(Collectors.groupingBy(a -> a.getKeywords(), Collectors.counting()));
+        /* =========================================================
+           3️⃣ TREND DATA (Technology)
+        ========================================================= */
+        Map<String, Long> techMap = new HashMap<>();
+
+        for (IpAsset asset : assets) {
+            if (asset.getKeywords() != null && !asset.getKeywords().isBlank()) {
+                String[] techs = asset.getKeywords().split(",");
+                for (String tech : techs) {
+                    String key = tech.trim();
+                    techMap.put(key, techMap.getOrDefault(key, 0L) + 1);
+                }
+            }
+        }
+
         List<Map<String, Object>> trendData = new ArrayList<>();
         for (Map.Entry<String, Long> e : techMap.entrySet()) {
-            Map<String, Object> entry = new HashMap<>();
-            entry.put("technology", e.getKey());
-            entry.put("patents", e.getValue());
-            entry.put("growth", (int) (Math.random() * 50));
-            trendData.add(entry);
+            Map<String, Object> t = new HashMap<>();
+            t.put("technology", e.getKey());
+            t.put("patents", e.getValue());
+            t.put("growth", (int) (Math.random() * 50));
+            trendData.add(t);
         }
 
-        // 3. Competitor Activity: group by assignee/company
+        /* =========================================================
+           4️⃣ COMPETITOR ACTIVITY
+        ========================================================= */
         Map<String, Long> companyMap = assets.stream()
                 .filter(a -> a.getAssignee() != null && !a.getAssignee().isEmpty())
-                .collect(Collectors.groupingBy(a -> a.getAssignee(), Collectors.counting()));
+                .collect(Collectors.groupingBy(
+                        IpAsset::getAssignee,
+                        Collectors.counting()
+                ));
+
         List<Map<String, Object>> competitorActivity = new ArrayList<>();
         for (Map.Entry<String, Long> e : companyMap.entrySet()) {
-            Map<String, Object> entry = new HashMap<>();
-            entry.put("company", e.getKey());
-            entry.put("filings", e.getValue());
-            entry.put("grants", (int) (Math.random() * 30));
-            entry.put("pending", (int) (Math.random() * 20));
-            entry.put("trend", "+" + (int) (Math.random() * 20) + "%");
-            competitorActivity.add(entry);
+            Map<String, Object> c = new HashMap<>();
+            c.put("company", e.getKey());
+            c.put("filings", e.getValue());
+            c.put("grants", (int) (Math.random() * 30));
+            c.put("pending", (int) (Math.random() * 20));
+            c.put("trend", "+" + (int) (Math.random() * 20) + "%");
+            competitorActivity.add(c);
         }
 
-        // 4. Subscriptions: mock for now
-        List<Map<String, Object>> subscriptions = List.of(
-                Map.of("id", 1, "keyword", "Artificial Intelligence", "jurisdiction", "US", "status", "Active", "newFilings", 12, "lastUpdate", "2h ago"),
-                Map.of("id", 2, "keyword", "Blockchain Protocol", "jurisdiction", "EP", "status", "Active", "newFilings", 8, "lastUpdate", "5h ago"),
-                Map.of("id", 3, "keyword", "IoT Security", "jurisdiction", "CN", "status", "Paused", "newFilings", 0, "lastUpdate", "1d ago")
-        );
-
-        // 5. Recent Filings: latest 5 assets
+        /* =========================================================
+           5️⃣ RECENT FILINGS
+        ========================================================= */
         List<Map<String, Object>> recentFilings = assets.stream()
-                .sorted(Comparator.comparing(IpAsset::getApplicationDate, Comparator.nullsLast(Comparator.reverseOrder())))
+                .sorted(Comparator.comparing(
+                        IpAsset::getApplicationDate,
+                        Comparator.nullsLast(Comparator.reverseOrder())
+                ))
                 .limit(5)
                 .map(a -> {
-                    Map<String, Object> filing = new HashMap<>();
-                    filing.put("title", a.getTitle());
-                    filing.put("type", a.getAssetType() != null ? a.getAssetType().name() : "");
-                    filing.put("jurisdiction", a.getJurisdiction());
-                    filing.put("date", a.getApplicationDate() != null ? a.getApplicationDate().toString() : "");
-                    return filing;
+                    Map<String, Object> f = new HashMap<>();
+                    f.put("title", a.getTitle());
+                    f.put("type", a.getAssetType() != null ? a.getAssetType().name() : "");
+                    f.put("jurisdiction", a.getJurisdiction());
+                    f.put("date", a.getApplicationDate());
+                    return f;
                 })
                 .collect(Collectors.toList());
 
-        // Brute-force: count all searches for the user (ignoring dataSource)
-        long totalSearchCount = 0;
-        if (user != null) {
-            totalSearchCount = searchHistoryRepository.countByUser(user);
-            System.out.println("[ANALYST-DASHBOARD-DEBUG] user.id=" + user.getId() + ", user.email=" + user.getEmail() + ", countByUser=" + totalSearchCount);
-        } else {
-            System.out.println("[ANALYST-DASHBOARD-DEBUG] user is null");
+        /* =========================================================
+           6️⃣ TOTAL SEARCHES
+        ========================================================= */
+        long totalSearches = (user != null)
+                ? searchHistoryRepository.countByUser(user)
+                : 0;
+
+        long patentSearchCount = totalSearches;
+        long trademarkSearchCount = totalSearches;
+
+        /* =========================================================
+           7️⃣ ACTIVE SUBSCRIPTIONS
+        ========================================================= */
+        long activeSubscriptions = (user != null)
+                ? subscriptionRepository
+                    .findByUserAndStatus(user, SubscriptionStatus.ACTIVE)
+                    .size()
+                : 0;
+
+        /* =========================================================
+           8️⃣ TECHNOLOGY PIE DATA
+        ========================================================= */
+        List<Map<String, Object>> techPieData = new ArrayList<>();
+        for (Map.Entry<String, Long> e : techMap.entrySet()) {
+            Map<String, Object> m = new HashMap<>();
+            m.put("name", e.getKey());
+            m.put("value", e.getValue());
+            techPieData.add(m);
         }
 
-        // Debug log for backend count
-        System.out.println("[ANALYST-DASHBOARD] Returning search count for user " + (user != null ? user.getId() : "null") + ": " + totalSearchCount);
+        
+        System.out.println("USER ID: " + user.getId());
+        System.out.println("TOTAL SEARCHES: " + totalSearches);
+        System.out.println("ACTIVE SUBSCRIPTIONS: " + activeSubscriptions);
+        System.out.println("TRACKED TECHNOLOGIES: " + techMap.size());
 
-        // For demo: show totalSearchCount in both badges, but also return totalSearches
-        long patentSearchCount = totalSearchCount;
-        long trademarkSearchCount = totalSearchCount;
-        long totalSearches = totalSearchCount;
-
+        /* =========================================================
+           9️⃣ RETURN RESPONSE
+        ========================================================= */
         return new AnalystDashboardResponse(
-                analyticsData,
-                trendData,
-                competitorActivity,
-                subscriptions,
-                recentFilings,
-                patentSearchCount,
-                trademarkSearchCount,
-                totalSearches
-        );
+        	    analyticsData,
+        	    trendData,
+        	    competitorActivity,
+        	    List.of(), 
+        	    recentFilings,
+        	    techPieData,
+        	    patentSearchCount,
+        	    trademarkSearchCount,
+        	    totalSearches,        // This maps to dashboardData.totalSearches
+        	    activeSubscriptions,  // This maps to dashboardData.activeSubscriptions
+        	    techMap.size()        // This maps to dashboardData.trackedTechnologies
+        	);
     }
 }

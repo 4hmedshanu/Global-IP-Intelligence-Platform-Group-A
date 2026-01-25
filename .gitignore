@@ -27,3 +27,4 @@ GlobalIpFrontend/build/
 .env
 *.swp
 GlobalIpBackend/target/
+/.metadata/

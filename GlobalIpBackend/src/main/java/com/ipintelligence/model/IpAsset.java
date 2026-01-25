@@ -45,9 +45,7 @@ public class IpAsset {
     @Column(name = "external_id", nullable = false)
     private String externalId;
 
-    @Column(nullable = false, columnDefinition = "TEXT") // FIX: TEXT for titles
-    private String title;
-
+   
     @Column(columnDefinition = "TEXT") // FIX: TEXT for abstracts
     private String description;
 
@@ -82,11 +80,15 @@ public class IpAsset {
     @Column(name = "patent_office")
     private String patentOffice;
 
-    @Column(columnDefinition = "TEXT") // FIX: TEXT for long inventor lists
+    @Column(columnDefinition = "TEXT")
+    private String title;
+
+    @Column(columnDefinition = "TEXT")
     private String inventor;
 
-    @Column(columnDefinition = "TEXT") // FIX: TEXT for assignees
+    @Column(columnDefinition = "TEXT")
     private String assignee;
+
 
     @Column(name = "ipc_classification", length = 1000)
     private String ipcClassification;

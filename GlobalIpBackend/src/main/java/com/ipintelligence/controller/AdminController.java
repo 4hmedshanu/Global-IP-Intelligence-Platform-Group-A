@@ -201,5 +201,21 @@ public class AdminController {
         return response;
     }
     
+    @DeleteMapping("/users/{id}")
+    public ResponseEntity<String> deleteUser(@PathVariable Integer id) {
+        adminService.deleteUser(id);
+        return ResponseEntity.ok("User deleted successfully");
+    }
+
+    
+    @GetMapping("/logs")
+    public List<SystemLogDTO> getLogs() {
+        return logService.getRecentLogs();
+    }
+
+    
+    
+    
+    
     
 }
