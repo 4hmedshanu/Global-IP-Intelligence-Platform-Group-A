@@ -1,6 +1,8 @@
 package com.ipintelligence.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -12,6 +14,8 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class SearchHistory {
 
     @Id
@@ -33,10 +37,14 @@ public class SearchHistory {
 
     @Column(name = "search_type")
     @Enumerated(EnumType.STRING)
-    private SearchType searchType;
+    private SearchType searchType; // How the search was performed
+
+    @Column(name = "asset_type") // NEW FIELD - tracks if searching for patent or trademark
+    @Enumerated(EnumType.STRING)
+    private AssetType assetType;
 
     @Column(name = "data_source")
-    private String dataSource; // USPTO, EPO, WIPO, TMView
+    private String dataSource; // USPTO, EPO, WIPO, TMView, GOOGLE_PATENT
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
@@ -48,7 +56,19 @@ public class SearchHistory {
         }
     }
 
+    // Search method type
     public enum SearchType {
-        KEYWORD, INVENTOR, ASSIGNEE, CLASSIFICATION, ADVANCED
+        KEYWORD,
+        INVENTOR,
+        ASSIGNEE,
+        CLASSIFICATION,
+        ADVANCED
+    }
+
+    // Asset type being searched
+    public enum AssetType {
+        PATENT,
+        TRADEMARK,
+        GENERAL
     }
 }

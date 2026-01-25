@@ -1,5 +1,6 @@
 /Users/chandrasekhar/Desktop/GlobalIp6/Global-IP-Intelligence-Platform-Group-A/GlobalIpBackend/src/main/java/com/ipintelligence/IpBackendApplication.java
 /Users/chandrasekhar/Desktop/GlobalIp6/Global-IP-Intelligence-Platform-Group-A/GlobalIpBackend/src/main/java/com/ipintelligence/config/ActuatorConfig.java
+/Users/chandrasekhar/Desktop/GlobalIp6/Global-IP-Intelligence-Platform-Group-A/GlobalIpBackend/src/main/java/com/ipintelligence/config/AdminUserSeeder.java
 /Users/chandrasekhar/Desktop/GlobalIp6/Global-IP-Intelligence-Platform-Group-A/GlobalIpBackend/src/main/java/com/ipintelligence/config/ApiClientConfig.java
 /Users/chandrasekhar/Desktop/GlobalIp6/Global-IP-Intelligence-Platform-Group-A/GlobalIpBackend/src/main/java/com/ipintelligence/config/OAuth2AuthenticationSuccessHandler.java
 /Users/chandrasekhar/Desktop/GlobalIp6/Global-IP-Intelligence-Platform-Group-A/GlobalIpBackend/src/main/java/com/ipintelligence/config/SecurityConfig.java

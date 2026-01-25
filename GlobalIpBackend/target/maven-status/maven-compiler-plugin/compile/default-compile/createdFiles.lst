@@ -6,6 +6,7 @@ com/ipintelligence/service/api/PatentOfficeApiClient.class
 com/ipintelligence/controller/DashboardController.class
 com/ipintelligence/model/SystemLog.class
 com/ipintelligence/dto/SystemLogDTO.class
+com/ipintelligence/config/AdminUserSeeder.class
 com/ipintelligence/dto/SystemUsageDTO.class
 com/ipintelligence/dto/ProfileRequest.class
 com/ipintelligence/model/SubscriptionStatus.class

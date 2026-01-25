@@ -9,6 +9,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @Configuration
 public class AdminUserSeeder {
+
     @Bean
     public CommandLineRunner seedAdminUsers(UserRepository userRepository) {
         return args -> {
