@@ -106,8 +106,12 @@ export default function AnalystDashboard() {
     familyData: [],
     competitorActivity: [],
     subscriptions: [],
-    statCards: []
+    statCards: [],
+    totalSearches: 0,
+    activeSubscriptions: 0,
+    trackedTechnologies: 0
   });
+
 
 
   // Filter state
@@ -247,9 +251,7 @@ export default function AnalystDashboard() {
         if (res.data.subscriptions) {
           statCards.push({
             label: 'Active Monitors',
-            value: res.data.subscriptions.filter(
-              s => s.status === 'ACTIVE'
-            ).length,
+            value: res.data.activeSubscriptions ?? 0
           });
 
         }
@@ -265,12 +267,26 @@ export default function AnalystDashboard() {
             .sort((a, b) => new Date(b.date) - new Date(a.date))
             .slice(0, 5);
         }
+
         setDashboardData(prev => ({
           ...prev,
-          ...res.data,
-          statCards,
-          recentFilings
+          // Backend se dynamic data yahan map ho raha hai
+          totalSearches: res.data.totalSearches || 0,
+          activeSubscriptions: res.data.activeSubscriptions || 0,
+          trackedTechnologies: res.data.trackedTechnologies || 0,
+          patentSearchCount: res.data.patentSearchCount || 0,
+          trademarkSearchCount: res.data.trademarkSearchCount || 0,
+
+          // Charts aur Tables ka data
+          analyticsData: res.data.analyticsData || [],
+          trendData: res.data.trendData || [],
+          competitorActivity: res.data.competitorActivity || [],
+          subscriptions: res.data.subscriptions || [],
+          recentFilings: recentFilings || [],
+          techPieData: res.data.techPieData || [],
+          statCards: statCards
         }));
+
 
         console.log("Landscape Pie:", res.data.techPieData);
 
@@ -633,7 +649,7 @@ export default function AnalystDashboard() {
 
 
 
-               
+
                 {/* Graphs and dynamic badges side by side */}
                 <div className="flex flex-col lg:flex-row gap-8 mb-8 w-full">
                   <div className={`grid gap-10 flex-1 ${safeTechPieData.length > 0 ? 'lg:grid-cols-3' : 'lg:grid-cols-2'}`}>
@@ -710,7 +726,7 @@ export default function AnalystDashboard() {
                     )}
                   </div>
                   {/* Dynamic badges on the right */}
-                  <div className="flex flex-col items-end space-y-6 min-w-[320px] lg:ml-8">
+                  {/* <div className="flex flex-col items-end space-y-6 min-w-[320px] lg:ml-8">
                     <DynamicBadge
                       label="Total Searches"
                       value={dashboardData.totalSearches || 0}
@@ -726,8 +742,11 @@ export default function AnalystDashboard() {
                       value={dashboardData.trademarkSearchCount}
                       gradient="from-blue-500 to-blue-700"
                     />
-                  </div>
+                  </div> */}
                 </div>
+
+
+
                 {/* Dynamic stat cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                   {dashboardData.statCards && dashboardData.statCards.map((stat, idx) => (
@@ -1151,28 +1170,27 @@ export default function AnalystDashboard() {
                     </button>
                   </div>
 
-                  {/* ===== Summary Section ===== */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                  {/* Summary Section inside Modal */}
+                  {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                     <div className="p-5 rounded-xl bg-indigo-50 dark:bg-indigo-900/30">
                       <h4 className="text-sm text-gray-500">Total Searches</h4>
-                      <p className="text-3xl font-bold">{dashboardData.totalSearches || 0}</p>
+                      <p className="text-3xl font-bold">
+                        {dashboardData.totalSearches} 
+                      </p>
                     </div>
                     <div className="p-5 rounded-xl bg-green-50 dark:bg-green-900/30">
                       <h4 className="text-sm text-gray-500">Active Subscriptions</h4>
                       <p className="text-3xl font-bold">
-                        {dashboardData.subscriptions?.filter(
-                          s => s.status === 'ACTIVE'
-                        ).length}
-
+                        {dashboardData.activeSubscriptions} 
                       </p>
                     </div>
                     <div className="p-5 rounded-xl bg-pink-50 dark:bg-pink-900/30">
                       <h4 className="text-sm text-gray-500">Tracked Technologies</h4>
                       <p className="text-3xl font-bold">
-                        {dashboardData.techPieData?.length || 0}
+                        {dashboardData.trackedTechnologies} 
                       </p>
                     </div>
-                  </div>
+                  </div> */}
 
                   {/* ===== Technology Distribution ===== */}
                   <div className="mb-10">
@@ -1402,6 +1420,19 @@ export default function AnalystDashboard() {
                 </ul>
               </div>
             )}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
           </main>
         </div>

@@ -32,5 +32,7 @@ public interface subscriptionRepository extends JpaRepository<Subscription, Inte
             @Param("user") User user,
             @Param("ipAsset") IpAsset ipAsset
     );
+    
+    long countByUser(User user);
 }
 

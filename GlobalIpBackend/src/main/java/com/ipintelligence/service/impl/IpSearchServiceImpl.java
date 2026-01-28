@@ -51,11 +51,11 @@ public class IpSearchServiceImpl implements IpSearchService {
 
     @Autowired
     public IpSearchServiceImpl(List<PatentOfficeApiClient> apiClients,
-                               IpAssetRepository ipAssetRepository,
-                               SearchHistoryRepository searchHistoryRepository,
-                               ObjectMapper objectMapper,
-                               GooglePatentService googlePatentService,
-                               TmViewSeleniumService tmViewSeleniumService) {
+            IpAssetRepository ipAssetRepository,
+            SearchHistoryRepository searchHistoryRepository,
+            ObjectMapper objectMapper,
+            GooglePatentService googlePatentService,
+            TmViewSeleniumService tmViewSeleniumService) {
         this.apiClients = apiClients;
         this.ipAssetRepository = ipAssetRepository;
         this.searchHistoryRepository = searchHistoryRepository;
@@ -93,7 +93,7 @@ public class IpSearchServiceImpl implements IpSearchService {
                     try {
                         List<IpAssetDto> dtos = tmViewSeleniumService.searchTrademark(
                                 searchRequest.getQuery() != null ? searchRequest.getQuery()
-                                        : (searchRequest.getAssignee() != null ? searchRequest.getAssignee() : "")
+                                : (searchRequest.getAssignee() != null ? searchRequest.getAssignee() : "")
                         );
                         SearchResultDto result = new SearchResultDto();
                         result.setAssets(dtos);
@@ -110,14 +110,14 @@ public class IpSearchServiceImpl implements IpSearchService {
                 apiClients.stream()
                         .filter(client -> !client.getDataSource().equalsIgnoreCase("TMVIEW") && client.isAvailable())
                         .forEach(client
-                                        -> futures.add(CompletableFuture.supplyAsync(() -> {
-                                    try {
-                                        return client.search(searchRequest);
-                                    } catch (Exception e) {
-                                        log.error("Error searching with client: {}", client.getDataSource(), e);
-                                        return createEmptyResult(searchRequest, client.getDataSource());
-                                    }
-                                }))
+                                -> futures.add(CompletableFuture.supplyAsync(() -> {
+                            try {
+                                return client.search(searchRequest);
+                            } catch (Exception e) {
+                                log.error("Error searching with client: {}", client.getDataSource(), e);
+                                return createEmptyResult(searchRequest, client.getDataSource());
+                            }
+                        }))
                         );
                 // Always include GooglePatentService as well
                 futures.add(CompletableFuture.supplyAsync(() -> {
@@ -164,7 +164,6 @@ public class IpSearchServiceImpl implements IpSearchService {
             combinedResult.setTotalElements(filteredAssets.size());
 
             // ✅ REMOVED: Don't save history here - controller will handle it
-
             // Save new assets to database
             if (combinedResult.getAssets() != null && !combinedResult.getAssets().isEmpty()) {
                 saveSearchResults(combinedResult.getAssets());
@@ -206,7 +205,6 @@ public class IpSearchServiceImpl implements IpSearchService {
             }
 
             // ✅ REMOVED: Don't save history here - controller will handle it
-
             // Save new assets to database
             if (!result.getAssets().isEmpty()) {
                 saveSearchResults(result.getAssets());

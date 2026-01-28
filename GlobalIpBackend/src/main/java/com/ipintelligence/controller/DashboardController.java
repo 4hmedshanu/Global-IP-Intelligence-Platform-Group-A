@@ -17,7 +17,12 @@ import com.ipintelligence.repo.UserRepository;
 
 @RestController
 @RequestMapping("/api/dashboard")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(
+	    origins = {
+	        "http://localhost:3000",
+	        "https://globalip-intelligence-platform-groupa.netlify.app"
+	    }
+	)
 
 public class DashboardController {
 
@@ -49,20 +54,32 @@ public class DashboardController {
 
     @GetMapping("/analyst")
     public ResponseEntity<AnalystDashboardResponse> getAnalystDashboard(
-            @AuthenticationPrincipal org.springframework.security.core.userdetails.User principal,
+            java.security.Principal principal,
             @RequestParam(value = "jurisdiction", required = false) String jurisdiction,
             @RequestParam(value = "technology", required = false) String technology,
             @RequestParam(value = "fromDate", required = false) String fromDate,
             @RequestParam(value = "toDate", required = false) String toDate
     ) {
-        User realUser = null;
-        if (principal != null && principal.getUsername() != null) {
-            realUser = userRepository.findByEmail(principal.getUsername()).orElse(null);
+
+        if (principal == null) {
+            throw new RuntimeException("User not authenticated");
         }
+
+        User realUser = userRepository
+                .findByEmail(principal.getName())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
         return ResponseEntity.ok(
-            analystDashboardService.getDashboardForAnalyst(realUser, jurisdiction, technology, fromDate, toDate)
+                analystDashboardService.getDashboardForAnalyst(
+                        realUser,
+                        jurisdiction,
+                        technology,
+                        fromDate,
+                        toDate
+                )
         );
     }
+
     
     
     

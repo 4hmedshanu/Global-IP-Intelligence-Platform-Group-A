@@ -251,9 +251,33 @@ export default function UserDashboard() {
     }
   };
 
-  const handleSearch = (e) => {
+  const handleSearch = async (e) => {
     e.preventDefault();
-    navigate('/search');
+    setSearchLoading(true);
+    try {
+      const searchRequest = {
+        query: searchQuery,
+        assetType: searchType === 'patents' ? 'PATENT' : 'TRADEMARK',
+        jurisdiction: searchFilters.jurisdiction || null,
+        fromDate: searchFilters.dateFrom || null,
+        toDate: searchFilters.dateTo || null,
+        page: 0,
+        size: 5,
+        sortBy: 'publicationDate',
+        sortDirection: 'DESC'
+      };
+
+      const response = await api.post('/api/search/all', searchRequest);
+      setSearchResults(response.data.assets || []);
+
+      // Refresh search history
+      fetchSearchHistory();
+    } catch (error) {
+      console.error('Error searching:', error);
+      setSearchResults([]);
+    } finally {
+      setSearchLoading(false);
+    }
   };
 
   const handleAdvancedSearch = () => {
@@ -374,7 +398,6 @@ export default function UserDashboard() {
               { id: 'overview', label: 'Overview', icon: <BarChart3 className="w-5 h-5" /> },
               { id: 'search', label: 'IP Search', icon: <VscSearch className="w-5 h-5" /> },
               { id: 'monitoring', label: 'Monitoring', icon: <Activity className="w-5 h-5" /> },
-              { id: 'alerts', label: 'Alerts', icon: <VscBell className="w-5 h-5" /> },
               { id: 'subscriptions', label: 'Subscriptions', icon: <BookmarkIcon /> },
 
 

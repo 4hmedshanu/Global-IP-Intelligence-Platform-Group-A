@@ -59,6 +59,8 @@ const Register = () => {
   };
 
   const handleGoogleSignup = () => {
+    
+    // window.location.href = 'https://globalip-backend.onrender.com/oauth2/authorize/google';
     window.location.href = 'http://localhost:8080/oauth2/authorize/google';
   };
 

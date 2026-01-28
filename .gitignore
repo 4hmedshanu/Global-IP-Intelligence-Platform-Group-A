@@ -1,0 +1,30 @@
+# Java/Maven
+GlobalIpBackend/target/
+*.class
+*.jar
+*.war
+*.ear
+
+# Logs
+*.log
+
+# IDEs
+/.idea/
+*.iml
+*.ipr
+*.iws
+/.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Node/React
+GlobalIpFrontend/node_modules/
+GlobalIpFrontend/build/
+
+# Misc
+.env
+*.swp
+GlobalIpBackend/target/
+/.metadata/

@@ -13,8 +13,15 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         config.setApplicationDestinationPrefixes("/app");
     }
 
+   
+    
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/ws").setAllowedOrigins("http://localhost:3000").withSockJS();
+        registry.addEndpoint("/ws")
+            .setAllowedOriginPatterns(
+                "http://localhost:3000",
+                "https://globalip-intelligence-platform-groupa.netlify.app"
+            )
+            .withSockJS();
     }
 }
