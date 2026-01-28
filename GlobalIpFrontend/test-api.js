@@ -10,12 +10,14 @@ console.log('🧪 Testing API connectivity...\n');
 const testEndpoints = [
   {
     name: 'Health Check',
+    // url: 'https://globalip-backend.onrender.com/health',
     url: 'http://localhost:8080/health',
     method: 'GET',
     useAuth: false
   },
   {
     name: 'OAuth Token Request',
+    // url: 'https://globalip-backend.onrender.com/oauth/token',
     url: 'http://localhost:8080/oauth/token',
     method: 'POST',
     useAuth: true,
@@ -27,6 +29,7 @@ const testEndpoints = [
   },
   {
     name: 'Login with OAuth Credentials',
+    // url: 'https://globalip-backend.onrender.com/api/auth/login',
     url: 'http://localhost:8080/api/auth/login',
     method: 'POST',
     useAuth: true,
@@ -37,6 +40,7 @@ const testEndpoints = [
   },
   {
     name: 'API Status',
+    // url: 'https://globalip-backend.onrender.com/api/status',
     url: 'http://localhost:8080/api/status',
     method: 'GET',
     useAuth: true

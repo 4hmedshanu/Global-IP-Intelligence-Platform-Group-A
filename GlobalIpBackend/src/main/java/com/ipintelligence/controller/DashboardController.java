@@ -17,7 +17,12 @@ import com.ipintelligence.repo.UserRepository;
 
 @RestController
 @RequestMapping("/api/dashboard")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(
+	    origins = {
+	        "http://localhost:3000",
+	        "https://globalip-intelligence-platform-groupa.netlify.app"
+	    }
+	)
 
 public class DashboardController {
 

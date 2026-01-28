@@ -8,7 +8,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(
+	    origins = {
+	        "http://localhost:3000",
+	        "https://globalip-intelligence-platform-groupa.netlify.app"
+	    }
+	)
 @RequestMapping("/client")
 @PreAuthorize("hasRole('CLIENT')")
 public class ClientController {

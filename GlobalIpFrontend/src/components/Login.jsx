@@ -75,6 +75,8 @@ export default function Login() {
 
   const handleGoogleLogin = () => {
     // Redirect to backend OAuth2 endpoint
+    
+    //  window.location.href = "https://globalip-backend.onrender.com/oauth2/authorize/google";
     window.location.href = "http://localhost:8080/oauth2/authorization/google";
   };
 

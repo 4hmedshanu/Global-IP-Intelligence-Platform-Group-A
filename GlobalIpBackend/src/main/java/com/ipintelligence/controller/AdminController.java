@@ -32,7 +32,12 @@ import com.ipintelligence.service.impl.SystemLogService;
 
 
 @RestController
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(
+	    origins = {
+	        "http://localhost:3000",
+	        "https://globalip-intelligence-platform-groupa.netlify.app"
+	    }
+	)
 @RequestMapping("/api/admin")
 @PreAuthorize("hasRole('ADMIN')")
 

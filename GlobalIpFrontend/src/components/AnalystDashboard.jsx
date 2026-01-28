@@ -1171,26 +1171,26 @@ export default function AnalystDashboard() {
                   </div>
 
                   {/* Summary Section inside Modal */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                  {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                     <div className="p-5 rounded-xl bg-indigo-50 dark:bg-indigo-900/30">
                       <h4 className="text-sm text-gray-500">Total Searches</h4>
                       <p className="text-3xl font-bold">
-                        {dashboardData.totalSearches} {/* Pehle yahan 0 tha */}
+                        {dashboardData.totalSearches} 
                       </p>
                     </div>
                     <div className="p-5 rounded-xl bg-green-50 dark:bg-green-900/30">
                       <h4 className="text-sm text-gray-500">Active Subscriptions</h4>
                       <p className="text-3xl font-bold">
-                        {dashboardData.activeSubscriptions} {/* Pehle yahan 0 tha */}
+                        {dashboardData.activeSubscriptions} 
                       </p>
                     </div>
                     <div className="p-5 rounded-xl bg-pink-50 dark:bg-pink-900/30">
                       <h4 className="text-sm text-gray-500">Tracked Technologies</h4>
                       <p className="text-3xl font-bold">
-                        {dashboardData.trackedTechnologies} {/* Pehle yahan 0 tha */}
+                        {dashboardData.trackedTechnologies} 
                       </p>
                     </div>
-                  </div>
+                  </div> */}
 
                   {/* ===== Technology Distribution ===== */}
                   <div className="mb-10">
